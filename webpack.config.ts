@@ -14,10 +14,17 @@ const config: webpack.Configuration = {
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: '[name].[contenthash].js',
+        clean: true,
     },
     plugins: [
-        new HtmlWebpackPlugin(),
-        new ModuleLogger(),
+        new HtmlWebpackPlugin({
+            template: './src/index.html',
+        }),
+        new ModuleLogger({
+            templatePath: path.resolve(__dirname, './src'),
+            pathToSave: path.resolve(__dirname, './unused.json'),
+            excludes: [path.resolve(__dirname, './src/index.html')],
+        }),
         new StatoscopePlugin({
             saveStatsTo: 'stats.json',
             saveOnlyStats: false,
@@ -29,8 +36,27 @@ const config: webpack.Configuration = {
             "buffer": require.resolve("buffer"),
             "stream": false,
         },
+        extensions: ['.tsx', '.ts', '.js'],
+        alias: {
+            'crypto-browserify': path.resolve(__dirname, 'uuid-new'),
+        },
     },
     module: {
+        rules: [
+            {
+                test: /\.(ts|tsx)$/i,
+                use: 'ts-loader',
+                exclude: ['/node_modules/'],
+            },
+        ],
+    },
+    optimization: {
+        concatenateModules: true,
+        splitChunks: {
+            minChunks: 2,
+            chunks: 'all',
+            minSize: 0,
+        },
     },
 };
 
